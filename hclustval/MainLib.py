@@ -89,7 +89,7 @@ def Compare_Null(LV,Rb):
 
 def Find_Component(LV,Rb,alpha=0.05):
 	
-	KEY,P = Compare_Null(LV,Rb):
+	KEY,P = Compare_Null(LV,Rb)
 	indx = np.where(P[:,0]<alpha*np.arange(1,P.shape[0]+1)/P.shape[0])[0]
 
 	if len(indx)==0:

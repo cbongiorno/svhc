@@ -125,7 +125,7 @@ def HclustVal(X,alpha=0.05,Nt=1000):
 	
 	Rb = Boot(X,Nt)
 	
-	L = HValidate(LV,RB,alpha)
+	L = HValidate(LV,Rb,alpha)
 	
 	return L,ToMemb(L,X.shape[0])
 	

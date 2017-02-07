@@ -99,7 +99,7 @@ def Find_Component(LV,Rb,alpha=0.05):
 
 
 	ed = list(map(tuple,P[indx:,1:].astype(int)))
-	g = ig.Graph(n=len(C),edges=ed)
+	g = ig.Graph(n=len(KEY),edges=ed)
 	g.vs["name"] = KEY
 
 	comp = g.components()
@@ -108,8 +108,9 @@ def Find_Component(LV,Rb,alpha=0.05):
 
 
 def HValidate(LV,Rb,alpha=0.05):
-	comp = Find_Component(LV,RB,alpha)
+	comp = Find_Component(LV,Rb,alpha)
 
+	KEY = comp.graph.vs["name"]
 	comp = comp.membership
 	L = [[] for i in range(len(set(comp)))]
 	for i,c in enumerate(comp):

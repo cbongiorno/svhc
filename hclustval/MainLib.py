@@ -57,6 +57,50 @@ def AverageLink(R):
 		nod = [nod[i] for i in range(len(nod)) if not sel.has_key(i)] + [np.append(nod[a],nod[b])]
 	
 	return LV
+
+def SingleLink(R):
+	N = R.shape[0]
+	LV = {}
+
+	nod =  [np.array([i]) for i in xrange(N)]
+
+	for lv in xrange(N-1):
+		Y = []
+		for i in xrange(len(nod)):
+			for j in xrange(i):
+				Y.append((R[nod[i]][:,nod[j]].max(),i,j))
+
+		y,a,b = max(Y)
+		
+		sel = {a:None,b:None}
+		
+		LV[tuple(sorted(list(np.append(nod[a],nod[b]))))] = (nod[a],nod[b])
+
+		nod = [nod[i] for i in range(len(nod)) if not sel.has_key(i)] + [np.append(nod[a],nod[b])]
+	
+	return LV
+	
+def CompleteLink(R):
+	N = R.shape[0]
+	LV = {}
+
+	nod =  [np.array([i]) for i in xrange(N)]
+
+	for lv in xrange(N-1):
+		Y = []
+		for i in xrange(len(nod)):
+			for j in xrange(i):
+				Y.append((R[nod[i]][:,nod[j]].min(),i,j))
+
+		y,a,b = max(Y)
+		
+		sel = {a:None,b:None}
+		
+		LV[tuple(sorted(list(np.append(nod[a],nod[b]))))] = (nod[a],nod[b])
+
+		nod = [nod[i] for i in range(len(nod)) if not sel.has_key(i)] + [np.append(nod[a],nod[b])]
+	
+	return LV
 	
 def Boot(X,Nt=1000):
 	Rb = []
@@ -66,18 +110,25 @@ def Boot(X,Nt=1000):
 		Rb.append(np.corrcoef(Xb))
 	return Rb
 
-def Collect(x,Rb,LV):
-    d = [Rb[i][LV[srt(x)][0]][:,LV[srt(x)][1]].mean() for i in range(len(Rb))]
-    return np.array(d)
+def Collect(x,Rb,LV,method):
+	
+	if method=='average':
+		d = [Rb[i][LV[srt(x)][0]][:,LV[srt(x)][1]].mean() for i in range(len(Rb))]
+	elif method=='single':
+		d = [Rb[i][LV[srt(x)][0]][:,LV[srt(x)][1]].max() for i in range(len(Rb))]
+	elif method=='complete':
+		d = [Rb[i][LV[srt(x)][0]][:,LV[srt(x)][1]].min() for i in range(len(Rb))]
+		
+	return np.array(d)
 
 
-def Compare_Null(LV,Rb):
-	C = {k:Collect(k,Rb,LV) for k in LV}
+def Compare_Null(LV,Rb,method):
+	C = {k:Collect(k,Rb,LV,method) for k in LV}
 
 	P = []
 	KEY = C.keys()
-	for i in range(len(KEY)):
-		for j in range(i):
+	for i in xrange(len(KEY)):
+		for j in xrange(i):
 			if len(np.intersect1d(KEY[i],KEY[j]))==0: continue
 			if not (KEY[i] in map(tuple,map(sorted,LV[KEY[j]])) or KEY[j] in map(tuple,map(sorted,LV[KEY[i]]))): continue
 			p= getPvalue(C[KEY[i]],C[KEY[j]])
@@ -87,9 +138,9 @@ def Compare_Null(LV,Rb):
 	P = np.array(sorted(P))
 	return KEY,P
 
-def Find_Component(LV,Rb,alpha=0.05):
+def Find_Component(LV,Rb,method,alpha=0.05):
 	
-	KEY,P = Compare_Null(LV,Rb)
+	KEY,P = Compare_Null(LV,Rb,method)
 	indx = np.where(P[:,0]<alpha*np.arange(1,P.shape[0]+1)/P.shape[0])[0]
 
 	if len(indx)==0:
@@ -107,8 +158,8 @@ def Find_Component(LV,Rb,alpha=0.05):
 	return comp
 
 
-def HValidate(LV,Rb,alpha=0.05):
-	comp = Find_Component(LV,Rb,alpha)
+def HValidate(LV,Rb,method,alpha=0.05):
+	comp = Find_Component(LV,Rb,method,alpha)
 
 	KEY = comp.graph.vs["name"]
 	comp = comp.membership
@@ -119,14 +170,19 @@ def HValidate(LV,Rb,alpha=0.05):
 
 	return L
 	
-def HclustVal(X,alpha=0.05,Nt=1000):
+def HclustVal(X,alpha=0.05,Nt=1000,method='average'):
 	R = np.corrcoef(X)
 	
-	LV = AverageLink(R)
+	if method=='average':
+		LV = AverageLink(R)
+	elif method=='single':
+		LV = SingleLink(R)
+	elif method=='complete':
+		LV = CompleteLink(R)
 	
 	Rb = Boot(X,Nt)
 	
-	L = HValidate(LV,Rb,alpha)
+	L = HValidate(LV,Rb,method,alpha)
 	
 	return L,ToMemb(L,X.shape[0])
 	

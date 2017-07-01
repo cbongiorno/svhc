@@ -101,13 +101,28 @@ def CompleteLink(R):
 		nod = [nod[i] for i in range(len(nod)) if not sel.has_key(i)] + [np.append(nod[a],nod[b])]
 	
 	return LV
+
+def pairBoot(Rb):    
+    Nt,N = len(Rb),Rb[0].shape[0]
+    
+    for i in xrange(N):
+        for j in xrange(i):    
+            ordn = np.random.choice(Nt,size=Nt,replace=False)
+            cmd = [Rb[x][i,j] for x in xrange(Nt)]
+            for x in xrange(Nt):
+                Rb[x][i,j] = cmd[x]
+                Rb[x][j,i] = cmd[x]
+    return Rb	
 	
-def Boot(X,Nt=1000):
+def Boot(X,Nt=1000,boottype='standard'):
 	Rb = []
 	for i in range(Nt):
 		sel = np.random.choice(range(X.shape[1]),replace=True,size=X.shape[1])
 		Xb = X[:,sel]
 		Rb.append(np.corrcoef(Xb))
+
+	if boottype=='pair':
+		Rb = pairBoot(Rb)
 	return Rb
 
 def Collect(x,Rb,LV,method):
@@ -170,7 +185,7 @@ def HValidate(LV,Rb,method,alpha=0.05):
 
 	return L
 	
-def HclustVal(X,alpha=0.05,Nt=1000,method='average'):
+def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard'):
 	R = np.corrcoef(X)
 	
 	if method=='average':
@@ -180,7 +195,7 @@ def HclustVal(X,alpha=0.05,Nt=1000,method='average'):
 	elif method=='complete':
 		LV = CompleteLink(R)
 	
-	Rb = Boot(X,Nt)
+	Rb = Boot(X,Nt,boottype)
 	
 	L = HValidate(LV,Rb,method,alpha)
 	

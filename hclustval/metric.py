@@ -2,6 +2,7 @@ import numpy as np
 import scipy.special as ss
 from collections import defaultdict,OrderedDict
 import matplotlib.pyplot as plt
+from MainLib import ToMemb
 
 def _ARIparts(m1,m2):
     M1 = defaultdict(list)
@@ -109,3 +110,10 @@ def StandardDendrogram(H):
 			
 	h = map(np.array,zip(*h))
 	return h
+
+def OrderArray(H):
+    return np.array( zip(*sorted(zip(H[-1],range(len(H[0])))))[1] )
+
+
+def CompressHC(nodes,N):
+	return StandardDendrogram(ToMemb(nodes,N))

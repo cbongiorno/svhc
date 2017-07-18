@@ -5,7 +5,7 @@
 
 Entrare nella cartella:
 
-	$ cd HClustValid/
+	$ cd HClustValid-master/
 
 Installare il software manager "pip" con:
 
@@ -28,7 +28,7 @@ Ora il software è pronto per l'uso
 
 
 ########################################################
-		DESCRIZIONE -- BENCHMARK
+		DESCRIZIONE -- BENCHMARK FATTORIALE
 ###################################################
 
 ++++ Per generare i dati del benchmark:
@@ -46,6 +46,25 @@ Dopo avere eseguito il comando verranno creati 3 files:"dataSeries_benchmark.dat
 1) Il file "dataSeries_benchmark.dat" contiene la serie di dati. Ogni riga è un nodo, ed i valori sono separati da tab.
 2) Il file "HyperNodeList_reference.dat" contiene la partizione di riferimento. Ogni riga è un ipernodo, i valori separati da virgola sono i nodi-leave che l'ipernodo contiene.
 3) Il file "CompressDendrogram_reference.dat" contiene un altro modo di rappresentare la partizione di riferimento. Ogni riga è un layer, ed ogni colonna un nodo. due nodi appartengono alla stessa comunità in un layer se hanno lo stesso valore.
+
+##########################################################
+		DESCRIZIONE -- BENCHMARK DI GARLASCHELLI
+#########################################################
+
+++++ Per generare i dati del benchmark:
+
+	$ python hclustval/Benchmark_Garlaschelli.py examples/PartitionSize_example.dat 0.4 0.7 5000
+
+- il file "examples/PartitionSize_example.dat" contiene le size delle partizioni. Sono separate da virgola.
+
+- 0.4 è mu, il parametro di mercato
+
+- 0.7 è ni, il parametro di noise
+
+- 5000 è la lunghezza della serie temporale ( Il numero di nodi viene ricavato automaticamente dal partitionSize sommando i valori )
+
+
+Dopo avere eseguito il comando verranno creati 3 files:"dataSeries_benchmark.dat", "HyperNodeList_reference.dat", "CompressDendrogram_reference.dat". La descrizione è la stessa di sopra.
 
 
 #############################################################

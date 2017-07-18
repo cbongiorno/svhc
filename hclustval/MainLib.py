@@ -1,5 +1,9 @@
 import numpy as np
 import igraph as ig
+import sys
+import pandas as pd
+import hclustval
+
 
 def ToMemb(nod,N):
     h = np.array([-1]*N)
@@ -199,6 +203,25 @@ def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard'):
 	
 	L = HValidate(LV,Rb,method,alpha)
 	
-	return L,ToMemb(L,X.shape[0])
+	return L,hclustval.StandardDendrogram(ToMemb(L,X.shape[0]))
+	
+	
+if __name__=='__main__':
+	
+	inputfile,alpha,Nt,method = sys.argv[1:]
+	
+	alpha,Nt = float(alpha),int(Nt)
+	
+	X = np.array(pd.read_csv(inputfile,sep='\t',header=None))
+	
+	comm,H = HclustVal(X,alpha,Nt,method)
+	
+	with open('HyperNodeList_out.dat','w') as fw:
+		fw.write("\n".join([",".join(map(str,comm[i])) for i in range(len(comm))]))
+
+	pd.DataFrame(hclustval.CompressHC(comm,X.shape[0])).to_csv('CompressDendrogram_out.dat',sep='\t',index=False,header=False)
+
+
+	
 	
 	

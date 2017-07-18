@@ -1,5 +1,8 @@
 import numpy as np
 import scipy.stats as st
+import sys
+import pandas as pd
+import hclustval
 
 def _gs(X, row_vecs=True, norm = True):
     if not row_vecs:
@@ -35,3 +38,20 @@ def CREATE_DATA(P,T=1000,noise=0.,com_ortho=True):
     X = (1.-noise)*X + noise*st.norm.rvs(0,1,size=X.shape)
     
     return X,com
+
+if __name__=='__main__':
+	
+	inputfile,T,noise = sys.argv[1:]
+	T,noise = int(T),float(noise)
+	
+	P = np.array(pd.read_csv(inputfile,sep='\t',header=None))
+	
+	X,comm = CREATE_DATA(P,T=T,noise=noise)
+	
+	pd.DataFrame(X).to_csv('dataSeries_benchmark.dat',sep='\t',index=False,header=False)
+	with open('HyperNodeList_reference.dat','w') as fw:
+		fw.write("\n".join([",".join(map(str,comm[i])) for i in range(len(comm))]))
+	
+	pd.DataFrame(hclustval.CompressHC(comm,X.shape[0])).to_csv('CompressDendrogram_reference.dat',sep='\t',index=False,header=False)
+	
+	

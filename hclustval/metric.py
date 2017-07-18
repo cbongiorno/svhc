@@ -3,6 +3,8 @@ import scipy.special as ss
 from collections import defaultdict,OrderedDict
 import matplotlib.pyplot as plt
 from MainLib import ToMemb
+import sys
+import pandas as pd
 
 def _ARIparts(m1,m2):
     M1 = defaultdict(list)
@@ -117,3 +119,22 @@ def OrderArray(H):
 
 def CompressHC(nodes,N):
 	return StandardDendrogram(ToMemb(nodes,N))
+	
+	
+if __name__=='__main__':
+	
+	partX,partRef = sys.argv[1:]
+	
+	partX = map(np.array,np.array(pd.read_csv(partX,sep='\t',header=None)))
+	partRef = map(np.array,np.array(pd.read_csv(partRef,sep='\t',header=None)))
+	
+	hari,hawi = HierARI(partX,partRef),HierAWI(partX,partRef)
+	
+	print "HARI",hari
+	print "HAWI",hawi
+	
+	with open('metric_out.dat','w') as fw:
+		fw.write("%f\tHARI\n%f\tHAWI\n"%(hari,hawi))
+	
+	
+	

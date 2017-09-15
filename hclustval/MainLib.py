@@ -118,16 +118,25 @@ def pairBoot(Rb):
                 Rb[x][j,i] = cmd[x]
     return Rb	
 	
-def Boot(X,Nt=1000,boottype='standard'):
-	Rb = []
-	for i in range(Nt):
-		sel = np.random.choice(range(X.shape[1]),replace=True,size=X.shape[1])
-		Xb = X[:,sel]
-		Rb.append(np.corrcoef(Xb))
+def Boot(X,Nt=1000,boottype='standard',pattern=None,M=None):
+	
+	if pattern==None:
+		Rb = []
+		for i in xrange(Nt):
+			sel = np.random.choice(range(X.shape[1]),replace=True,size=X.shape[1])
+			Xb = X[:,sel]
+			Rb.append(np.corrcoef(Xb))
 
-	if boottype=='pair':
-		Rb = pairBoot(Rb)
-	return Rb
+		if boottype=='pair':
+			Rb = pairBoot(Rb)
+		return Rb
+	else:
+		Rb = []
+		for _ in xrange(Nt):
+			Xb,cmm = hclustval.Benchmark.CREATE_DATA(P,T=M)
+			Rb.append(np.corrcoef(Xb))
+			
+		return Rb
 
 def Collect(x,Rb,LV,method):
 	
@@ -189,7 +198,13 @@ def HValidate(LV,Rb,method,alpha=0.05):
 
 	return L
 	
-def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard'):
+def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',pattern=None,M=None):
+	
+	if pattern!=None and M==None:
+		print "If you specify the pattern, you must specify the dataseries lenght (M) too"
+		sys.exit(0)
+	
+	
 	R = np.corrcoef(X)
 	
 	if method=='average':
@@ -199,7 +214,7 @@ def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard'):
 	elif method=='complete':
 		LV = CompleteLink(R)
 	
-	Rb = Boot(X,Nt,boottype)
+	Rb = Boot(X,Nt,boottype,pattern,M)
 	
 	L = HValidate(LV,Rb,method,alpha)
 	

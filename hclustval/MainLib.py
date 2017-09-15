@@ -218,7 +218,7 @@ def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',pattern=
 	
 	L = HValidate(LV,Rb,method,alpha)
 	
-	return L,hclustval.StandardDendrogram(ToMemb(L,X.shape[0]))
+	return L,hclustval.StandardDendrogram(ToMemb(L,X.shape[0])),LV
 	
 	
 if __name__=='__main__':

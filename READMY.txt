@@ -14,7 +14,7 @@ Installare il software manager "pip" con:
 
 Quindi, installare tramite pip le seguenti librerie:
 
-	$  sudo pip install scipy matplotlib numpy python-igraph pandas
+	$  sudo pip install scipy matplotlib numpy python-igraph pandas seaborn
 
 
 (Spero che igraph non faccia errori .. in caso fatemi sapere)

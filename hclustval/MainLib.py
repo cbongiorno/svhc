@@ -198,7 +198,7 @@ def HValidate(LV,Rb,method,alpha=0.05):
 
 	return L
 	
-def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',P=None,M=None):
+def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',pattern=None,M=None):
 	
 	if pattern!=None and M==None:
 		print "If you specify the pattern, you must specify the dataseries lenght (M) too"

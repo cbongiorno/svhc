@@ -6,6 +6,67 @@ from MainLib import ToMemb
 import sys
 import pandas as pd
 
+
+def InterCorr(R,C,g):
+    
+    N = R.shape[0]
+    A = np.zeros((N,N))
+    
+    v = np.zeros(N)
+    v[np.array(g)] = 1
+    part = np.outer(v,v)
+    A = A+part
+    
+    for cl in C:
+        cl = np.array(cl)
+        v = np.zeros(N)
+        v[cl] = 1
+
+        part = np.outer(v,v)
+        A = A-part
+    np.fill_diagonal(A,0)
+    return np.mean(R[np.where(A)])
+
+def Find_Gen(L):
+    gen = {}
+    for i in range(len(L)):
+        for j in range(i+1,len(L)):
+            if len(set(L[i]) & set(L[j]))==len(L[i]):
+                gen[L[i]] = L[j]
+                break
+    return gen
+
+def CreateAvMat(X,L):
+    N = X.shape[0]
+    R = np.corrcoef(X)
+    La = [tuple(sorted(l)) for l in L]+[(i,) for i in range(N)]
+
+    La = sorted(La,key=len)
+
+    gen = Find_Gen(La)
+
+    son = defaultdict(list)
+    for s,g in gen.items():
+        son[g].append(s)
+
+    La =sorted(La,key=len,reverse=True)
+
+
+    Rm = np.zeros((N,N))
+
+    for i in range(len(La)):
+        if not son.has_key(La[i]): continue
+        #if len(La[i])==1: continue
+        p = InterCorr(R,son[La[i]],La[i])
+        #print p,i
+        v = np.zeros(N)
+        v[np.array(La[i])] = 1
+        v = np.outer(v,v)
+        Rm[np.where(v)] = p
+
+    return Rm
+
+
 def _ARIparts(m1,m2):
     M1 = defaultdict(list)
     M2 = defaultdict(list)

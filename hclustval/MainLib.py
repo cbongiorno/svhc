@@ -198,7 +198,7 @@ def HValidate(LV,Rb,method,alpha=0.05):
 
 	return L
 	
-def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',pattern=None,M=None):
+def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',Rb=None,pattern=None,M=None):
 	
 	if pattern!=None and M==None:
 		print "If you specify the pattern, you must specify the dataseries lenght (M) too"
@@ -207,19 +207,45 @@ def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',pattern=
 	
 	R = np.corrcoef(X)
 	
-	if method=='average':
-		LV = AverageLink(R)
-	elif method=='single':
-		LV = SingleLink(R)
-	elif method=='complete':
-		LV = CompleteLink(R)
+	if method!='all':
+		if method=='average':
+			LV = AverageLink(R)
+		elif method=='single':
+			LV = SingleLink(R)
+		elif method=='complete':
+			LV = CompleteLink(R)
+		
+		if Rb==None:
+			Rb = Boot(X,Nt,boottype,pattern,M)
+		
+		L = HValidate(LV,Rb,method,alpha)
+		
+		return L,hclustval.StandardDendrogram(ToMemb(L,X.shape[0])),LV
 	
-	Rb = Boot(X,Nt,boottype,pattern,M)
-	
-	L = HValidate(LV,Rb,method,alpha)
-	
-	return L,hclustval.StandardDendrogram(ToMemb(L,X.shape[0])),LV
-	
+	else:
+		res = {}
+		
+		res['single'] = SingleLink(R)
+		if Rb==None:
+			Rb = Boot(X,Nt,boottype,pattern,M)
+		res['singleVal'] = HValidate(res['single'],Rb,'single',alpha)
+		res['singValCompress'] = hclustval.StandardDendrogram(ToMemb(res['single'],X.shape[0]))
+		
+		res['average'] = AverageLink(R)
+		if Rb==None:
+			Rb = Boot(X,Nt,boottype,pattern,M)
+		res['averageVal'] = HValidate(res['average'],Rb,'average',alpha)
+		res['averageValCompress'] = hclustval.StandardDendrogram(ToMemb(res['average'],X.shape[0]))
+		
+		res['complete'] = CompleteLink(R)
+		if Rb==None:
+			Rb = Boot(X,Nt,boottype,pattern,M)
+		res['completeVal'] = HValidate(res['complete'],Rb,'complete',alpha)
+		res['completeValCompress'] = hclustval.StandardDendrogram(ToMemb(res['complete'],X.shape[0]))
+		
+		return res
+		
+		
 	
 if __name__=='__main__':
 	

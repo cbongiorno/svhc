@@ -67,7 +67,7 @@ def CreateAvMat(X,L):
     return Rm
 
 def ComputeDistance(Rx,Rb):
-    return np.mean(map(lambda x:abs(x-Rx)[np.triu_indices(Rb.shape[0],1)].mean(),Rb))
+    return np.mean(map(lambda x:abs(x-Rx)[np.triu_indices(Rx.shape[0],1)].mean(),Rb))
 
 def Performance(Rx,R,Rb):
     mx = ComputeDistance(R,Rb)

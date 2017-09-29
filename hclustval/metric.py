@@ -66,6 +66,13 @@ def CreateAvMat(X,L):
 
     return Rm
 
+def ComputeDistance(Rx,Rb):
+    return np.mean(map(lambda x:abs(x-Rx)[np.triu_indices(R.shape[0],1)].mean(),Rb))
+
+def Performance(Rx,R,Rb):
+    mx = ComputeDistance(R,Rb)
+
+    return (ComputeDistance(Rx,Rb)-mx)/(ComputeDistance(np.identity(R.shape[0]),Rb)-mx)
 
 def _ARIparts(m1,m2):
     M1 = defaultdict(list)

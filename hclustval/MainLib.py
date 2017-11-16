@@ -229,19 +229,19 @@ def HclustVal(X,alpha=0.05,Nt=1000,method='average',boottype='standard',Rb=None,
 		if Rb==None:
 			Rb = Boot(X,Nt,boottype,pattern,M)
 		res['singleVal'] = HValidate(res['single'],Rb,'single',alpha)
-		res['singValCompress'] = hclustval.StandardDendrogram(ToMemb(res['single'],X.shape[0]))
+		#res['singValCompress'] = hclustval.StandardDendrogram(ToMemb(res['single'],X.shape[0]))
 		
 		res['average'] = AverageLink(R)
 		if Rb==None:
 			Rb = Boot(X,Nt,boottype,pattern,M)
 		res['averageVal'] = HValidate(res['average'],Rb,'average',alpha)
-		res['averageValCompress'] = hclustval.StandardDendrogram(ToMemb(res['average'],X.shape[0]))
+		#res['averageValCompress'] = hclustval.StandardDendrogram(ToMemb(res['average'],X.shape[0]))
 		
 		res['complete'] = CompleteLink(R)
 		if Rb==None:
 			Rb = Boot(X,Nt,boottype,pattern,M)
 		res['completeVal'] = HValidate(res['complete'],Rb,'complete',alpha)
-		res['completeValCompress'] = hclustval.StandardDendrogram(ToMemb(res['complete'],X.shape[0]))
+		#res['completeValCompress'] = hclustval.StandardDendrogram(ToMemb(res['complete'],X.shape[0]))
 		
 		return res
 		

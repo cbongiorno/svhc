@@ -2,7 +2,6 @@ import numpy as np
 import scipy.stats as st
 import sys
 import pandas as pd
-import hclustval
 
 def _gs(X, row_vecs=True, norm = True):
     if not row_vecs:

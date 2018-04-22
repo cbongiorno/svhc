@@ -2,10 +2,34 @@ import numpy as np
 import scipy.special as ss
 from collections import defaultdict,OrderedDict
 import matplotlib.pyplot as plt
-from MainLib import ToMemb
+#from MainLib import ToMemb
 import sys
 import pandas as pd
 
+def ToMemb(nod,N):
+    h = np.array([-1]*N)
+
+    nod = sorted(nod,key=lambda x:len(x),reverse=True)
+    Hn = []
+    sel = {}
+    while True:
+        c = 0
+        for i in range(len(nod)):
+            if i in sel: continue
+            if not all(h[np.array(nod[i])]==-1): continue
+
+            h[np.array(nod[i])]=c
+            sel[i] = None
+            c+=1
+
+        h[h==-1] = np.arange(h.max()+1,(h==-1).sum()+h.max()+1)
+        Hn.append(h)
+        h = np.array([-1]*N)
+        if len(sel)==len(nod):
+            break
+
+    Hn.append(np.arange(N))    
+    return Hn
 
 def InterCorr(R,C,g):
     
@@ -184,10 +208,10 @@ def StandardDendrogram(H):
 def OrderArray(H):
     return np.array( zip(*sorted(zip(H[-1],range(len(H[0])))))[1] )
 
-
+'''
 def CompressHC(nodes,N):
 	return StandardDendrogram(ToMemb(nodes,N))
-	
+'''
 	
 if __name__=='__main__':
 	

@@ -1,4 +1,10 @@
 
+
+$ sudo easy_install pip
+
+$ sudo apt-get install pip python-tk
+$ sudo pip install svhc
+
 ###############################################################
 		INSTALLAZIONE
 ###########################################################

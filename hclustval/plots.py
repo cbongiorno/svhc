@@ -5,6 +5,7 @@ from MainLib import ToMemb
 import matplotlib.patches as patches
 import numpy as np
 import seaborn as sns
+import pandas as pd
 
 def PlotDendro(R,nodes,xylabel='Objects',cblabel='pearson',file_w=None,lw=0.5,color='red'):
 
@@ -47,7 +48,7 @@ from hclustval.metric import OrderArray,StandardDendrogram,ToMemb
 
 
 
-def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,color_style='Set1'):
+def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,color_style='Set1',nan=False):
     
 	ordn = ordn = OrderArray(StandardDendrogram(ToMemb(LV.keys(),x.shape[0])))
 	x = x[ordn]
@@ -58,7 +59,12 @@ def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,colo
 												   np.array(sorted([rev_ornd[a] for a in LV[K][1]]))) for K in LV}
 
 	L = [tuple(sorted([rev_ornd[k] for k in K])) for K in L]
-	R = 1.-np.corrcoef(x)
+	
+	if nan==False:
+		R = 1 - np.corrcoef(x)
+	else:
+		R = 1. -np.array(pd.DataFrame(x.T).corr()) 
+	#R = 1.-np.corrcoef(x)
 
 	L = sorted(L,key=len)
 
@@ -101,7 +107,7 @@ def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,colo
 	pos = defaultdict(tuple)
 
 	for i in range(N):
-		pos[(i,)] = (float(i),1)
+		pos[(i,)] = (float(i),0)
 
 	K = sorted(LV.keys(),key=len)
 
@@ -141,6 +147,11 @@ def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,colo
 	axarr[0].tick_params(labelsize=14)
 	axarr[0].set_ylabel('Metric (%s)'%method,fontsize=18)
 	axarr[0].yaxis.set_label_position("right")
+	
+	if nan==False:
+		R = np.corrcoef(x)
+	else:
+		R =  np.array(pd.DataFrame(x.T).corr()) 
 
 	ims = axarr[1].imshow(R,vmin=-1,vmax=1,cmap=cm.RdBu_r,interpolation='nearest')
 
@@ -180,9 +191,9 @@ def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,colo
 
 
 
-def DendroAndCorr(x,L,LV,method='average',xylabel='Objects',file_w=None,color_style='Set1'):
+def DendroAndCorr(x,L,LV,method='average',xylabel='Objects',file_w=None,color_style='Set1',nan=False):
     
-	ordn = ordn = OrderArray(StandardDendrogram(ToMemb(LV.keys(),x.shape[0])))
+	ordn = OrderArray(StandardDendrogram(ToMemb(LV.keys(),x.shape[0])))
 	x = x[ordn]
 
 	rev_ornd = dict(sorted(zip(ordn,range(len(ordn)))))
@@ -191,7 +202,10 @@ def DendroAndCorr(x,L,LV,method='average',xylabel='Objects',file_w=None,color_st
 												   np.array(sorted([rev_ornd[a] for a in LV[K][1]]))) for K in LV}
 
 	L = [tuple(sorted([rev_ornd[k] for k in K])) for K in L]
-	R = np.corrcoef(x)
+	if nan==False:
+		R = 1 - np.corrcoef(x)
+	else:
+		R = 1. -np.array(pd.DataFrame(x.T).corr()) 
 
 	L = sorted(L,key=len)
 

@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(	name='svhc',
       	version='0.1',
@@ -13,9 +13,9 @@ setup(	name='svhc',
 				'multiprocessing',
 				'functools'],
 	scripts=['bin/svhc','bin/svhc_benchmark','bin/svhc_plot'],
-	author_email='Christian Bongiorno',
-	email='pvofeta@gmail.com',
-	license='MIT',
+	author='Christian Bongiorno',
+	author_email='pvofeta@gmail.com',
+	license='GPL',
 	zip_safe=False
 
       )

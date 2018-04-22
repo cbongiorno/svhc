@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import svhc
+import sys
+import pandas as pd
+
+if __name__=='__main__':
+	
+	inputfile,Nt,alpha,nan,ncpu = sys.argv[1:]
+	Nt,alpha,nan = int(T),float(noise),bool(nan),int(ncpu)
+	
+	X = np.array(pd.read_csv(inputfile,sep='\t',header=None))
+	
+	comm,pvalues = svhc.Find_ValidatedCluster(X,Nt,alpha,nan,ncpu)
+	
+	with open('Validated_Cluster.dat','w') as fw:
+		fw.write("\n".join([",".join(map(str,comm[i])) for i in range(len(comm))]))
+	
+	with open('full_dendrogram_pvalues.dat','w') as fw:
+		fw.write("\n".join([str(pvalue)+"\t"+",".join(map(str,c)) for pvalue,c in pvalues.items()]))

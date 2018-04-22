@@ -3,18 +3,29 @@
 import svhc
 import sys
 import pandas as pd
+import numpy as np
+
+def write_dendro(LV,file_w):
+	with open(file_w,'w') as fw:
+		for k,(a,b) in LV.items():
+			s = ",".join(map(str,k))+'\t'+",".join(map(str,a))+'\t'+",".join(map(str,b))+'\n'
+			fw.write(s)
+	return
+		
 
 if __name__=='__main__':
 	
 	inputfile,Nt,alpha,nan,ncpu = sys.argv[1:]
-	Nt,alpha,nan = int(T),float(noise),bool(nan),int(ncpu)
+	Nt,alpha,nan,ncpu = int(Nt),float(alpha),bool(nan),int(ncpu)
 	
 	X = np.array(pd.read_csv(inputfile,sep='\t',header=None))
 	
-	comm,pvalues = svhc.Find_ValidatedCluster(X,Nt,alpha,nan,ncpu)
+	comm,pvalues,dendro = svhc.Find_ValidatedCluster(X,Nt,alpha,nan,ncpu)
 	
 	with open('Validated_Cluster.dat','w') as fw:
 		fw.write("\n".join([",".join(map(str,comm[i])) for i in range(len(comm))]))
 	
-	with open('full_dendrogram_pvalues.dat','w') as fw:
-		fw.write("\n".join([str(pvalue)+"\t"+",".join(map(str,c)) for pvalue,c in pvalues.items()]))
+	with open('pvalues.dat','w') as fw:
+		fw.write("\n".join([str(pvalue)+"\t"+",".join(map(str,c)) for c,pvalue in pvalues.items()]))
+
+	write_dendro(dendro,'dendogram.dat')

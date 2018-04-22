@@ -48,9 +48,9 @@ def SingleBoot(X,nan,seed=None):
 
     
 def BootDist(X,Nt=1000,nan=False,ncpu=1):
-	
-	f = partial(SingleBoot,nan)
-	seeds = np.random.randint(1e18,size=Nt)
+
+	f = partial(SingleBoot,X,nan)
+	seeds = np.random.randint(2**32,size=Nt)
 	if ncpu==1:
 		Rb = map(f,seeds)
 	else:
@@ -58,7 +58,7 @@ def BootDist(X,Nt=1000,nan=False,ncpu=1):
 		Rb = p.map(f,seeds)
 		p.close()
 
-    return Rb
+	return Rb
     
 def get_Pvalues(Rb,LV,N,alpha):
 	vl = [(tuple(a),tuple(b)) for a,b in LV.values()]
@@ -79,7 +79,7 @@ def get_Pvalues(Rb,LV,N,alpha):
 		
 	PV = sorted(PV)
 	
-	L,PV = FDR(PV,alpha,N,alpha)
+	L,PV = FDR(PV,alpha,N)
 	
 	return L,PV
 	
@@ -100,6 +100,7 @@ def FDR(PV,alpha,N):
 	L = map(tuple,sorted(L,key=len,reverse=True))
 	
 	PV = {c:p for p,c in PV}
+	PV[tuple(range(N))] = np.nan
 	return L,PV
 
 def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=1):
@@ -116,4 +117,4 @@ def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=1):
 
 
 	
-	return L,PV
+	return L,PV,LV

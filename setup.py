@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(	name='svhc',
-      	version='0.1',
+      	version='0.11',
       	packages=['svhc'],
 	install_requires=[	'numpy',
 				'pandas',

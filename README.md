@@ -15,7 +15,6 @@ The easist way to install the library is with easy_install (or with port).
 
 ```
 $ sudo easy_install install pip
-$ echo "export PATH=$PATH:/Users/$USER/Library/Python/2.7/bin" >>  ~/.bash_profile
 $ sudo pip install svhc
 ```
 
@@ -25,11 +24,20 @@ if the last command raise conflicts, then you should try:
 $ sudo pip install --ignore-installed svhc
 ```
 
+Then you can try to call the script:
+```
+$ svhc
+``
 
+if it does not find the script, you can add the path temporaneously with the command:
 ```
 export PATH="/Users/$USER/Library/Python/2.7/bin:$PATH"
 ```
 
+or permanently with (da provare):
+```
+$ echo "export PATH=$PATH:/Users/$USER/Library/Python/2.7/bin" >>  ~/.bash_profile
+```
 ### on Windows
 Install python2.7 and pip by following the instruction at the [link](https://pip.pypa.io/en/stable/installing/#do-i-need-to-install-pip). Then from the prompt
 
@@ -71,7 +79,7 @@ Few optional parameters are allowed:
 ```
 $ svhc test_dataSeries_benchmark.dat 1000 test --alpha 0.5 --nan 0 --ncpu 1
 ```
-where *alpha* is the confidence of the FDR multiple comparison correction (default 0.05); *nan* is a boolean entry that must be fixed to 1 if there are NaN entries in the dataset; *ncpu* is the number of core used for the evaluation of the bootstrap copies (default 1).
+where **alpha** is the confidence of the FDR multiple comparison correction (default 0.05); **nan** is a boolean entry that must be fixed to 1 if there are NaN entries in the dataset; **ncpu** is the number of core used for the evaluation of the bootstrap copies (default 1).
 
 
 The program will produce three files: **test_Validated_Cluster.dat**, that is the list (by row) of validated clusters, each row is the list of nodes within the cluster (comma separated); **prova_pvalue.dat** that is the list of pvalues associated to each cluster; **test_dendrogram.dat** that contain the full information of the dendrogram.
@@ -84,7 +92,7 @@ To plot the dendrogram with the output of the previous example please run:
 $ svhc_plot test_dataSeries_benchmark.dat test_Validated_Cluster.dat test_dendrogram.dat test_pic
 ```
 
-the program will procude a *test_pic.pdf*
+the program will procude a **test_pic.pdf**
 
 
 

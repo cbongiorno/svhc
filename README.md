@@ -27,7 +27,7 @@ $ sudo pip install --ignore-installed svhc
 Then you can try to call the script:
 ```
 $ svhc
-``
+```
 
 if it does not find the script, you can add the path temporaneously with the command:
 ```

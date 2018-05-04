@@ -18,6 +18,13 @@ $ sudo easy_install install pip
 $ sudo pip install svhc
 ```
 
+if there is a problem with the ssl certificate, then run:
+
+```
+$ curl https://bootstrap.pypa.io/get-pip.py | sudo python
+$ sudo pip install svc
+```
+
 if the last command raise conflicts, then you should try:
 
 ```

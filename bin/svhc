@@ -23,13 +23,16 @@ if __name__=='__main__':
 	parser.add_argument('--alpha', type=float, nargs='?', const=0.05,  default=0.05,  help='confidence of the FDR (default 0.05)')
 	parser.add_argument('--nan', type=int, nargs='?', const=0,  default=0,  help='set 1 if the data contain NaN (default 0)')
 	parser.add_argument('--ncpu', type=int, nargs='?', const=1,  default=1,  help='number of cpu used in multiprocessing (default 1)')
+	parser.add_argument('--row', type=int, nargs='?', const=1,  default=1,  help='data series store by row (default 1)')	
 	parser.add_argument('outputfile', type=str,  help='name of the output file')
 	args = parser.parse_args()
 	
-	inputfile,Nt,alpha,nan,ncpu = args.inputfile,args.Nt,args.alpha,args.nan,args.ncpu
+	inputfile,Nt,alpha,nan,ncpu,row = args.inputfile,args.Nt,args.alpha,args.nan,args.ncpu,args.row
 	outputfile = args.outputfile
 	
 	X = np.array(pd.read_csv(inputfile,sep='\t',header=None))
+	if row==0:
+		X = X.T
 	
 	comm,pvalues,dendro = svhc.Find_ValidatedCluster(X,Nt,alpha,nan,ncpu)
 	
@@ -39,4 +42,4 @@ if __name__=='__main__':
 	with open('%s_pvalues.dat'%outputfile,'w') as fw:
 		fw.write("\n".join([str(pvalue)+"\t"+",".join(map(str,c)) for c,pvalue in pvalues.items()]))
 
-	write_dendro(dendro,'%s_dendogram.dat'%outputfile)
+	write_dendro(dendro,'%s_dendrogram.dat'%outputfile)

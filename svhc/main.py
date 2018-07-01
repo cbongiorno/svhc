@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import numpy.core.multiarray
 import fastcluster
-from multiprocessing import Pool
+from multiprocessing import Pool,cpu_count
 from functools import partial
 from contextlib import closing
 
@@ -111,7 +111,7 @@ def FDR(PV,alpha,N):
 	PV[tuple(range(N))] = np.nan
 	return L,PV
 
-def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=1):
+def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=cpu_count()):
 	if nan==False:
 		R = 1 - np.corrcoef(X)
 	else:

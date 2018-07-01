@@ -63,7 +63,7 @@ Then, to generate the data series run:
 ```
 $ svhc_benchmark pattern_example.dat 500 test
 ```
-where 500 is the lenght of the data series. Test is the output name.  The program will produce **test_dataSeries_benchmark.dat**, that is the data matrix (a matrix 100x500), and  **test_cluster_reference.dat**, that is the list of the nodes that belong to each cluster; each line is a different cluster, nodes are comma separated.
+where 500 is the lenght of the data series. Test is the output name.  The program will produce **test_dataSeries_benchmark.dat**, that is the data matrix (a matrix 500x100), and  **test_cluster_reference.dat**, that is the list of the nodes that belong to each cluster; each line is a different cluster, nodes are comma separated.
 
 If you want to add noise to the data you can use the optional parameter:
 
@@ -80,7 +80,7 @@ To estimate the validated clusters on the dataseries generated in the previous e
 $ svhc test_dataSeries_benchmark.dat 1000 test
 ```
 
-where **1000** is the number of bootstrap copies, and **test** is the output name. If you want to use your own dataset, please remember to store your object by row, and your attribute by colomn tab separated and without header of index numbers. Then the algoithm will find the clusters of objects.
+where **1000** is the number of bootstrap copies, and **test** is the output name. If you want to use your own dataset, please remember to store your object by columns tab separated and without header of index numbers. Then the algoithm will find the clusters of objects.
 
 Few optional parameters are allowed:
 ```

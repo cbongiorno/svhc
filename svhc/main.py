@@ -1,10 +1,12 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
 import numpy as np
 import pandas as pd
 import numpy.core.multiarray
 import fastcluster
 from multiprocessing import Pool
 from functools import partial
-
+from contextlib import closing
 
 def flatten(container):
     for i in container:
@@ -37,53 +39,59 @@ def AVdist(R):
     dend ={flatx((a,b)):(np.array(a),np.array(b)) for a,b in dend}
     return dend
    
-def SingleBoot(X,nan,seed=None):
+def SingleBoot(X,LV,nan,seed=None):
 	local_state = np.random.RandomState(seed)
 	sel = local_state.choice(range(X.shape[1]),replace=True,size=X.shape[1])
 	Xb = X[:,sel]
 	if nan==False:
-		return 1.-np.corrcoef(Xb)
+		Rb = 1.-np.corrcoef(Xb)
 	else:
-		return 1.-np.array(pd.DataFrame(Xb.T).corr())
+		Rb = 1.-np.array(pd.DataFrame(Xb.T).corr())
+	return singPV(LV,Rb)
 
     
-def BootDist(X,Nt=1000,nan=False,ncpu=1):
+def BootDist(X,LV,Nt=1000,nan=False,ncpu=1):
 
-	f = partial(SingleBoot,X,nan)
+	f = partial(SingleBoot,X,LV,nan)
 	seeds = np.random.randint(2**32,size=Nt)
 	if ncpu==1:
-		Rb = map(f,seeds)
+		PV = map(f,seeds)
 	else:
-		p = Pool(processes=ncpu)
-		Rb = p.map(f,seeds)
-		p.close()
+		with closing(Pool(processes=ncpu)) as p:
+			PV = list(p.imap_unordered(f,seeds))
 
-	return Rb
+	return PV
+
+def singPV(LV,Rb):
+
+    vl = [(tuple(a),tuple(b)) for a,b in LV.values()]
+    rxy = dict(zip(vl,map(lambda (a,b): Rb[a][:,b].mean(),LV.values())))
+
+    PV = []
+    for (a,b) in LV.values():
+        a,b = tuple(a),tuple(b)
+        t = b
+        if LV.has_key(t):
+            c,d = map(tuple,LV[t])
+            PV.append((((rxy[(c,d)]-rxy[(a,b)])>0).sum(),t))
+        t = a
+        if LV.has_key(t):
+            c,d = map(tuple,LV[t])
+            PV.append((((rxy[(c,d)]-rxy[(a,b)])>0).sum(),t))
+    return zip(*PV)[0]
+
+def Validate(PV,LV,Nt,N,alpha):
+    PV = (np.array(PV).sum(axis=0))/float(Nt)
+
+    nod = [tuple(e) for (a,b) in LV.values() for e in [b,a] if LV.has_key(tuple(e))]
+
+    PV = zip(PV,nod)
+
+    PV = sorted(PV)
+
+    L,PV = FDR(PV,alpha,N)
     
-def get_Pvalues(Rb,LV,N,alpha):
-	vl = [(tuple(a),tuple(b)) for a,b in LV.values()]
-	rxy = dict(zip(vl,map(lambda (a,b): np.array(map(lambda x:x[a][:,b].mean(),Rb)),LV.values())))
-
-	Nt = float(len(Rb))
-	PV = []
-	for (a,b) in LV.values():
-		a,b = tuple(a),tuple(b)
-		t = b
-		if LV.has_key(t):
-			c,d = map(tuple,LV[t])
-			PV.append((((rxy[(c,d)]-rxy[(a,b)])>0).sum()/Nt,t))
-		t = a
-		if LV.has_key(t):
-			c,d = map(tuple,LV[t])
-			PV.append((((rxy[(c,d)]-rxy[(a,b)])>0).sum()/Nt,t))
-		
-	PV = sorted(PV)
-	
-	L,PV = FDR(PV,alpha,N)
-	
-	return L,PV
-	
-
+    return L,PV
 
 
 def FDR(PV,alpha,N):
@@ -111,10 +119,9 @@ def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=1):
 
 	LV = AVdist(R)
 
-	Rb = BootDist(X,Nt,nan,ncpu)
+	PV = BootDist(X,LV,Nt,nan,ncpu)
 	
-	L,PV = get_Pvalues(Rb,LV,X.shape[0],alpha)
-
+	L,PV = Validate(PV,LV,Nt,X.shape[0],alpha)
 
 	
 	return L,PV,LV

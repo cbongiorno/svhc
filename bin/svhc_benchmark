@@ -12,17 +12,22 @@ if __name__=='__main__':
 	parser.add_argument('inputfile', type=str, help='tab separated factor loading matrix')
 	parser.add_argument('T', type=int,  help='length of the data series')
 	parser.add_argument('--noise', type=float, nargs='?', const=0.,  default=0.,  help='noise parameter (0<=noise<=1)')
+	parser.add_argument('--row', type=int, nargs='?', const=1,  default=0,  help='data series is stored by row (default 0. It means NO)')	
 	parser.add_argument('outputfile', type=str,  help='name of the output file')
-	
+
 	args = parser.parse_args()
 					
 	inputfile,T,noise = args.inputfile, args.T, args.noise
 	outputfile = args.outputfile
+	row = args.row
 
 	P = np.array(pd.read_csv(inputfile,sep='\t',header=None))
 
 	X,comm = svhc.CREATE_DATA(P,T=T,noise=noise)
 
-	pd.DataFrame(X).to_csv('%s_dataSeries_benchmark.dat'%outputfile,sep='\t',index=False,header=False)
+	if row==1:
+		pd.DataFrame(X).to_csv('%s_dataSeries_benchmark.dat'%outputfile,sep='\t',index=False,header=False)
+	else:
+		pd.DataFrame(X.T).to_csv('%s_dataSeries_benchmark.dat'%outputfile,sep='\t',index=False,header=False)		
 	with open('%s_cluster_reference.dat'%outputfile,'w') as fw:
 		fw.write("\n".join([",".join(map(str,comm[i])) for i in range(len(comm))]))

@@ -61,7 +61,7 @@ If you want generate a dataset starting from a factor model, then you need a fac
 Then, to generate the data series run:
 
 ```
-$ svhc_benchmark pattern.dat 500 test
+$ svhc_benchmark pattern_example.dat 500 test
 ```
 where 500 is the lenght of the data series. Test is the output name.  The program will produce **test_dataSeries_benchmark.dat**, that is the data matrix (a matrix 100x500), and  **test_cluster_reference.dat**, that is the list of the nodes that belong to each cluster; each line is a different cluster, nodes are comma separated.
 

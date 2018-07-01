@@ -1,3 +1,5 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
 import numpy as np
 import scipy.special as ss
 from collections import defaultdict,OrderedDict

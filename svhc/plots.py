@@ -1,3 +1,5 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
 import matplotlib.pyplot as plt
 import matplotlib.cm as cmap
 from metric import StandardDendrogram,OrderArray,ToMemb

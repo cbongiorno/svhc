@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import argparse
 from multiprocessing import cpu_count
+from svhc.metric import StandardDendrogram,OrderArray,ToMemb
 
 
 def write_dendro(LV,file_w):
@@ -14,28 +15,37 @@ def write_dendro(LV,file_w):
 			s = ",".join(map(str,k))+'\t'+",".join(map(str,a))+'\t'+",".join(map(str,b))+'\n'
 			fw.write(s)
 	return
-		
+	
+def write_order(LV,file_w):
+
+	ordn = OrderArray(StandardDendrogram(ToMemb(LV.keys(),len(LV)+1)))
+	with open(file_w,'w') as fw:
+		fw.write("\n".join(map(str,ordn))+'\n')
+	return 
 
 if __name__=='__main__':
 	
 	parser = argparse.ArgumentParser(description='Evaluate the Statistically Validated Hierarchical Clusters from a multivariate data series')
 	parser.add_argument('inputfile', type=str, help='tab separated data series (the objectes must be stored by row)')
 	parser.add_argument('Nt', type=int,  help='Number of bootstrap copies')
+	parser.add_argument('--method', type=str, nargs='?', default='average',  help='hierarchical clustering method: average (default), complete, single')
 	parser.add_argument('--alpha', type=float, nargs='?', const=0.05,  default=0.05,  help='confidence of the FDR (default 0.05)')
 	parser.add_argument('--nan', type=int, nargs='?', const=0,  default=0,  help='set 1 if the data contain NaN (default 0)')
 	parser.add_argument('--ncpu', type=int, nargs='?', const=1,  default=cpu_count(),  help='number of cpu used in multiprocessing (default ALL)')
+	#parser.add_argument('--ncpu', type=int, nargs='?', const=1,  default=1,  help='number of cpu used in multiprocessing (default 1)')
 	parser.add_argument('--row', type=int, nargs='?', const=1,  default=0,  help='data series is stored by row (default 0. It means NO)')	
 	parser.add_argument('outputfile', type=str,  help='name of the output file')
 	args = parser.parse_args()
 	
 	inputfile,Nt,alpha,nan,ncpu,row = args.inputfile,args.Nt,args.alpha,args.nan,args.ncpu,args.row
 	outputfile = args.outputfile
+	method = args.method
 	
 	X = np.array(pd.read_csv(inputfile,sep='\t',header=None))
 	if row==0:
 		X = X.T
 	
-	comm,pvalues,dendro = svhc.Find_ValidatedCluster(X,Nt,alpha,nan,ncpu)
+	comm,pvalues,dendro = svhc.Find_ValidatedCluster(X,Nt,alpha,nan,ncpu,method)
 	
 	with open('%s_Validated_Cluster.dat'%outputfile,'w') as fw:
 		fw.write("\n".join([",".join(map(str,comm[i])) for i in range(len(comm))]))
@@ -44,3 +54,6 @@ if __name__=='__main__':
 		fw.write("\n".join([str(pvalue)+"\t"+",".join(map(str,c)) for c,pvalue in pvalues.items()]))
 
 	write_dendro(dendro,'%s_dendrogram.dat'%outputfile)
+	
+	write_order(dendro,'%s_ordering.dat'%outputfile)
+	

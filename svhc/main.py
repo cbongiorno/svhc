@@ -1,5 +1,9 @@
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 import numpy as np
 import pandas as pd
 import numpy.core.multiarray
@@ -7,6 +11,7 @@ import fastcluster
 from multiprocessing import Pool,cpu_count
 from functools import partial
 from contextlib import closing
+from joblib import Parallel, delayed
 
 def flatten(container):
     for i in container:
@@ -18,82 +23,71 @@ def flatten(container):
 def flatx(x):
     return tuple(sorted(flatten(x)))
 
-def AVdist(R):
-    N = R.shape[0]
-    d = R[np.triu_indices(N,1)]
-    out = fastcluster.average(d)
-
-    outI = out.astype(int)
-
-    dend = {i:(i,) for i in xrange(N)}
-
-    for i in xrange(len(outI)):
-        dend[i+N] = (dend[outI[i][0]],dend[outI[i][1]])
+def dist(R,method):
+	N = R.shape[0]
+	d = R[np.triu_indices(N,1)]
 
 
-    for i in xrange(N):
-        dend.pop(i,None)
+	if method=='average':
+		out = fastcluster.average(d)
+	if method=='complete':
+		out = fastcluster.complete(d)
+	if method=='single':
+		out = fastcluster.single(d)
 
-    dend = [(flatx(a),flatx(b)) for a,b in dend.values()]
+	outI = out.astype(int)
 
-    dend ={flatx((a,b)):(np.array(a),np.array(b)) for a,b in dend}
-    return dend
+	dend = {i:(i,) for i in xrange(N)}
+
+	for i in xrange(len(outI)):
+		dend[i+N] = (dend[outI[i][0]],dend[outI[i][1]])
+
+
+	for i in xrange(N):
+		dend.pop(i,None)
+
+	dend = [(flatx(a),flatx(b)) for a,b in dend.values()]
+
+	dend ={flatx((a,b)):(np.array(a),np.array(b)) for a,b in dend}
+	return dend
    
-def SingleBoot(X,LV,nan,seed=None):
-	local_state = np.random.RandomState(seed)
-	sel = local_state.choice(range(X.shape[1]),replace=True,size=X.shape[1])
-	Xb = X[:,sel]
-	if nan==False:
-		Rb = 1.-np.corrcoef(Xb)
-	else:
-		Rb = 1.-np.array(pd.DataFrame(Xb.T).corr())
-	return singPV(LV,Rb)
+def singPV(LV,Rb,method,gen):
+    
+    if method=='average':
+        rxy = dict(map(lambda (k,(a,b)): (k,Rb[a][:,b].mean()),LV.items()))
+    if method=='complete':
+        rxy = dict(map(lambda (k,(a,b)): (k,Rb[a][:,b].max()),LV.items()))
+    if method=='single':
+        rxy = dict(map(lambda (k,(a,b)): (k,Rb[a][:,b].min()),LV.items()))
+
+    PV = map(lambda (k,q):int(rxy[q]<rxy[k]), gen.items())
+    
+    return PV
+
+def SingleBoot(X,LV,nan,method,gen,sel):
+    
+    Xb = X[:,sel]
+    if nan==False:
+        Rb = 1.-np.corrcoef(Xb)
+    else:
+        Rb = 1.-np.array(pd.DataFrame(Xb.T).corr())
+        
+    return singPV(LV,Rb,method,gen)
 
     
-def BootDist(X,LV,Nt=1000,nan=False,ncpu=1):
+def BootDist(X,LV,method,Nt=1000,nan=False,ncpu=1):
 
-	f = partial(SingleBoot,X,LV,nan)
-	seeds = np.random.randint(2**32,size=Nt)
-	if ncpu==1:
-		PV = map(f,seeds)
-	else:
-		with closing(Pool(processes=ncpu)) as p:
-			PV = list(p.imap_unordered(f,seeds))
+	gen = {tuple(s):k for k in LV for s in LV[k] if len(s)>1}
 
-	return PV
+	f = partial(SingleBoot,X,LV,nan,method,gen)
 
-def singPV(LV,Rb):
+	sels = np.random.choice(range(X.shape[1]),replace=True,size=(Nt,X.shape[1]))
 
-    vl = [(tuple(a),tuple(b)) for a,b in LV.values()]
-    rxy = dict(zip(vl,map(lambda (a,b): Rb[a][:,b].mean(),LV.values())))
 
-    PV = []
-    for (a,b) in LV.values():
-        a,b = tuple(a),tuple(b)
-        t = b
-        if LV.has_key(t):
-            c,d = map(tuple,LV[t])
-            PV.append((((rxy[(c,d)]-rxy[(a,b)])>0).sum(),t))
-        t = a
-        if LV.has_key(t):
-            c,d = map(tuple,LV[t])
-            PV.append((((rxy[(c,d)]-rxy[(a,b)])>0).sum(),t))
-    return zip(*PV)[0]
+	PV = Parallel(n_jobs=ncpu, backend="threading")(delayed(f)(sel) for sel in sels)
 
-def Validate(PV,LV,Nt,N,alpha):
-    PV = (np.array(PV).sum(axis=0))/float(Nt)
-
-    nod = [tuple(e) for (a,b) in LV.values() for e in [b,a] if LV.has_key(tuple(e))]
-
-    PV = zip(PV,nod)
-
-    PV = sorted(PV)
-
-    L,PV = FDR(PV,alpha,N)
+	return sorted(zip(np.array(PV).mean(axis=0),gen.keys()))
     
-    return L,PV
-
-
 def FDR(PV,alpha,N):
 	p = np.array(zip(*PV)[0])
 	thr = np.arange(1,len(PV)+1)*alpha/len(PV)
@@ -110,18 +104,18 @@ def FDR(PV,alpha,N):
 	PV = {c:p for p,c in PV}
 	PV[tuple(range(N))] = np.nan
 	return L,PV
-
-def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=cpu_count()):
+	
+	
+def Find_ValidatedCluster(X,Nt=1000,alpha=0.05,nan=False,ncpu=cpu_count(),method='average'):
 	if nan==False:
 		R = 1 - np.corrcoef(X)
 	else:
 		R = 1. -np.array(pd.DataFrame(X.T).corr()) 
+			
+	LV = dist(R,method)
 
-	LV = AVdist(R)
-
-	PV = BootDist(X,LV,Nt,nan,ncpu)
+	PV = BootDist(X,LV,method,Nt,nan,ncpu)
 	
-	L,PV = Validate(PV,LV,Nt,X.shape[0],alpha)
+	L,PV = FDR(PV,alpha,X.shape[0])
 
-	
 	return L,PV,LV

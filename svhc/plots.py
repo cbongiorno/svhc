@@ -86,9 +86,9 @@ def DendroAndCorrDist(x,L,LV,method='average',xylabel='Objects',file_w=None,colo
 		if method=='average':
 			h = R[LV[k][0]][:,LV[k][1]].mean()
 		elif method=='complete':
-			h = R[LV[k][0]][:,LV[k][1]].min()
-		elif method=='single':
 			h = R[LV[k][0]][:,LV[k][1]].max()
+		elif method=='single':
+			h = R[LV[k][0]][:,LV[k][1]].min()
 
 		axarr[0].plot([pp[0],pp[0]],[h0[0],h],'-',color='k',alpha=0.5)
 		axarr[0].plot([pp[1],pp[1]],[h0[1],h],'-',color='k',alpha=0.5)
